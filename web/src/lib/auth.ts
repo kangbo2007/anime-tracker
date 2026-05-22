@@ -1,22 +1,30 @@
-import NextAuth from "next-auth";
+import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "./db";
 import "./auth-types";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const providers: NextAuthOptions["providers"] = [];
+
+if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
+  providers.push(GitHub({
+    clientId: process.env.AUTH_GITHUB_ID,
+    clientSecret: process.env.AUTH_GITHUB_SECRET,
+  }));
+}
+
+if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+  providers.push(Google({
+    clientId: process.env.AUTH_GOOGLE_ID,
+    clientSecret: process.env.AUTH_GOOGLE_SECRET,
+  }));
+}
+
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
-  providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
-  ],
+  providers,
   pages: {
     signIn: "/auth/signin",
   },
@@ -28,4 +36,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+};
+
+export const auth = () => getServerSession(authOptions);

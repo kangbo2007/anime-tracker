@@ -7,7 +7,7 @@ interface RankingItemProps {
   titleJp: string | null;
   cover: string | null;
   score: number;
-  breakdown: Record<string, number>;
+  breakdown: Record<string, number | string>;
 }
 
 export function RankingItem({ rank, id, title, titleJp, cover, score, breakdown }: RankingItemProps) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export async function Navbar() {
   const session = await auth();
@@ -22,22 +22,12 @@ export async function Navbar() {
                 我的追番
               </Link>
               <span className="text-sm text-gray-400">{session.user.name}</span>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut();
-                }}
-              >
-                <button className="text-sm text-gray-500 hover:text-gray-700">
-                  退出
-                </button>
-              </form>
+              <Link href="/api/auth/signout" className="text-sm text-gray-500 hover:text-gray-700">
+                退出
+              </Link>
             </>
           ) : (
-            <Link
-              href="/api/auth/signin"
-              className="text-sm text-indigo-600 hover:text-indigo-800"
-            >
+            <Link href="/auth/signin" className="text-sm text-indigo-600 hover:text-indigo-800">
               登录
             </Link>
           )}

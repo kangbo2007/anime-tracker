@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import { RankingItem } from "./RankingItem";
 
+interface RankingData {
+  id: string;
+  title: string;
+  titleJp: string | null;
+  cover: string | null;
+  score: number;
+  breakdown: Record<string, number | string>;
+}
+
 export function RankingList({ type }: { type: string }) {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<RankingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState("");
 
