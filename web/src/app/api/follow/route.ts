@@ -28,3 +28,43 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ followed: true });
 }
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ follows: [] });
+  }
+
+  const follows = await db.userFollow.findMany({
+    where: { userId: session.user.id },
+    include: {
+      anime: {
+        select: {
+          id: true,
+          title: true,
+          titleJp: true,
+          cover: true,
+          currentEpisode: true,
+          broadcastDay: true,
+        },
+      },
+    },
+  });
+
+  const withProgress = await Promise.all(
+    follows.map(async (f) => {
+      const progress = await db.userWatchProgress.findUnique({
+        where: { userId_animeId: { userId: session.user.id, animeId: f.animeId } },
+        select: { currentEpisode: true },
+      });
+      return { ...f, progress };
+    })
+  );
+
+  const dayOrder = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
+  withProgress.sort((a, b) => {
+    return dayOrder.indexOf(a.anime.broadcastDay || "SUNDAY") - dayOrder.indexOf(b.anime.broadcastDay || "SUNDAY");
+  });
+
+  return NextResponse.json({ follows: withProgress });
+}

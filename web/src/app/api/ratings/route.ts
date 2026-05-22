@@ -22,3 +22,20 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(result);
 }
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ ratings: [] });
+  }
+
+  const ratings = await db.userRating.findMany({
+    where: { userId: session.user.id },
+    include: {
+      anime: { select: { title: true, cover: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json({ ratings });
+}
